@@ -1,0 +1,60 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #121a24;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.container {
+  width: 100%;
+  max-width: 600px;
+  border: 1px solid #00cfff;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: #1e2a38;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #00cfff;
+}
+
+.status {
+  color: #00ff9d;
+  font-weight: bold;
+}
+
+.log-section {
+  margin-top: 1rem;
+  border-top: 1px solid #00cfff;
+  padding-top: 1rem;
+}
+
+.log-text {
+  font-style: italic;
+  color: #ccc;
+  margin-top: 0.5rem;
+}
+
+/* 모바일 대응 */
+@media screen and (max-width: 600px) {
+  .container {
+    padding: 0.75rem;
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+  }
+
+  .log-section {
+    font-size: 0.95rem;
+  }
+}

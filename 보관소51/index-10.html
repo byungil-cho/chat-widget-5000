@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🐋 OrcaX 실시간 채팅</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #f2fcfe, #e0f1ff);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .chat-container {
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 90%;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 1.5rem;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin: 0.5rem 0;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    textarea {
+      resize: none;
+      height: 80px;
+    }
+    button {
+      background: linear-gradient(90deg, #3498db, #2ecc71);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    #chat-log {
+      margin-top: 1rem;
+      max-height: 250px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 1rem;
+      background: #f9f9f9;
+    }
+    .message {
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+      color: #333;
+    }
+    .message.me {
+      color: #2ecc71;
+      font-weight: bold;
+    }
+    .scroll-toggle {
+      margin-top: 0.3rem;
+      font-size: 0.9rem;
+      text-align: right;
+      cursor: pointer;
+      color: #3498db;
+    }
+    .exit-button {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 1rem;
+      background: linear-gradient(90deg, #ff6b6b, #f06595);
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .exit-button:hover {
+      transform: scale(1.02);
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <h1>🐋 OrcaX 실시간 채팅</h1>
+    <input type="text" id="sender" placeholder="닉네임을 입력하세요" />
+    <textarea id="message" placeholder="메시지를 입력하세요"></textarea>
+    <button onclick="sendMessage()">전송하기</button>
+    <div class="scroll-toggle" onclick="toggleScroll()">📌 자동 스크롤: <span id="scroll-state">케지름</span></div>
+    <div id="chat-log"></div>
+    <button class="exit-button" onclick="window.location.href='index.html'">나가기</button>
+  </div>
+
+  <script>
+    const apiUrl = "https://climbing-wholly-grouper.ngrok-free.app/api/messages";
+    let autoScroll = true;
+
+    // 로컬 저장된 닉네임 불러오기
+    window.onload = () => {
+      const saved = localStorage.getItem('nickname');
+      if (saved) document.getElementById('sender').value = saved;
+      loadMessages();
+      setInterval(loadMessages, 3050);
+    };
+
+    function sendMessage() {
+      const sender = document.getElementById("sender").value.trim();
+      const message = document.getElementById("message").value.trim();
+      if (!sender || !message) {
+        alert("닉네임과 메시지를 모두 입력해주세요!");
+        return;
+      }
+
+      localStorage.setItem("nickname", sender);
+
+      fetch(apiUrl, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sender, message })
+      })
+      .then(res => res.json())
+      .then(() => {
+        document.getElementById("message").value = '';
+        loadMessages();
+      })
+      .catch(err => {
+        alert("⚠️ 메시지 전송 실패!");
+        console.error("전송 에러:", err);
+      });
+    }
+
+    // 엔터로 전송
+    document.getElementById("message").addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function loadMessages() {
+      fetch(apiUrl)
+        .then(res => res.json())
+        .then(messages => {
+          if (!Array.isArray(messages)) return;
+          const log = document.getElementById("chat-log");
+          const currentUser = localStorage.getItem("nickname");
+          log.innerHTML = messages.map(msg =>
+            `<div class="message ${msg.sender === currentUser ? "me" : ""}"><strong>[${msg.sender}]</strong> ${msg.message}</div>`
+          ).join('');
+          if (autoScroll) log.scrollTop = log.scrollHeight;
+        })
+        .catch(err => console.error("불러오기 에러:", err));
+    }
+
+    function toggleScroll() {
+      autoScroll = !autoScroll;
+      document.getElementById("scroll-state").innerText = autoScroll ? "케지름" : "끊길";
+    }
+  </script>
+</body>
+</html>

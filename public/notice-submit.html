@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>공지사항 등록</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #f0f2f5, #dbeafe);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 24px;
+      color: #333;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border 0.3s;
+    }
+    input:focus, textarea:focus {
+      border-color: #3b82f6;
+      outline: none;
+    }
+    button {
+      width: 100%;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📢 공지사항 등록</h2>
+    <form id="noticeForm">
+      <input type="password" id="password" placeholder="비밀번호 (2025)" required />
+      <input type="text" id="title" placeholder="제목을 입력하세요" required />
+      <textarea id="content" rows="6" placeholder="내용을 입력하세요" required></textarea>
+      <button type="submit">등록하기</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('noticeForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const password = document.getElementById('password').value;
+      const title = document.getElementById('title').value;
+      const content = document.getElementById('content').value;
+
+      if (password !== '2025') {
+        alert("비밀번호가 틀렸습니다.");
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/notices', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, content, date: new Date() })
+        });
+
+        if (res.ok) {
+          alert("공지사항이 등록되었습니다.");
+          form.reset();
+        } else {
+          alert("등록 실패: 서버 오류");
+        }
+      } catch (err) {
+        console.error("에러:", err);
+        alert("등록 중 오류 발생");
+      }
+    });
+  </script>
+</body>
+</html>

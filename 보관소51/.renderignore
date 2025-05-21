@@ -1,0 +1,7 @@
+# Ignore nothing critical
+# Do NOT block essential server code
+
+# Optional: Ignore client build artifacts if any
+node_modules/
+.env
+.DS_Store

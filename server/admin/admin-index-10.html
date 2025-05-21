@@ -1,0 +1,104 @@
+<!-- admin/admin-index-10.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📢 OrcaX 관리자 공지 전송</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .admin-container {
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 90%;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 1.5rem;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin: 0.5rem 0;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #00b894;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #019474;
+    }
+
+    .status {
+      text-align: center;
+      margin-top: 1rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <h1>📢 OrcaX 관리자 공지 전송</h1>
+    <input type="text" id="nickname" value="admin" readonly />
+    <textarea id="content" placeholder="공지 내용을 입력하세요" required></textarea>
+    <button onclick="sendNotice()">공지 전송</button>
+    <div class="status" id="status-msg"></div>
+  </div>
+
+  <script>
+    const apiUrl = "https://28c5-210-104-209-108.ngrok-free.app/api/messages";
+
+    function sendNotice() {
+      const nickname = document.getElementById("nickname").value.trim();
+      const content = document.getElementById("content").value.trim();
+      const statusMsg = document.getElementById("status-msg");
+
+      if (!content) {
+        alert("공지 내용을 입력하세요.");
+        return;
+      }
+
+      fetch(apiUrl, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname, content, type: 'admin' })
+      })
+      .then(res => {
+        if (res.ok) {
+          statusMsg.textContent = "✅ 공지 전송 완료!";
+          document.getElementById("content").value = '';
+        } else {
+          statusMsg.textContent = "❌ 전송 실패. 다시 시도하세요.";
+        }
+      })
+      .catch(() => {
+        statusMsg.textContent = "⚠️ 서버 오류.";
+      });
+    }
+  </script>
+</body>
+</html>

@@ -63,7 +63,7 @@
   </div>
 
   <script>
-    const apiUrl = "https://3ba8c781cd35.ngrok.app/api/messages";
+    const apiUrl = "https://e02ad46ed5f3.ngrok.app/send";
     let currentNickname = "";
 
     window.onload = () => {
@@ -74,7 +74,7 @@
       document.getElementById('sender').value = saved;
       currentNickname = saved;
       loadMessages();
-      setInterval(loadMessages, 5000);
+      setInterval(loadMessages, 5050);
     };
 
     function sendMessage() {

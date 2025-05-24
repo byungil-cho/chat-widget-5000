@@ -6,20 +6,21 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// 🔥 필수 JSON 파싱 미들웨어
+app.use(express.json());
+
 // CORS 설정
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN,
   credentials: true,
 }));
 
-app.use(express.json());
-
-// 루트 접속 테스트
+// 테스트용 기본 응답
 app.get('/', (req, res) => {
   res.send('💬 orcax-chat-widget 서버 실행 중입니다!');
 });
 
-// MongoDB 연결 및 서버 시작
+// MongoDB 연결
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB 연결 성공 (채팅 위젯)');
@@ -31,8 +32,7 @@ mongoose.connect(process.env.MONGO_URI)
     console.error('❌ MongoDB 연결 실패:', err);
   });
 
-// --- 메시지 스키마 및 라우트 추가 ---
-
+// 🔁 메시지 스키마 및 모델
 const messageSchema = new mongoose.Schema({
   sender: String,
   message: String,
@@ -54,13 +54,13 @@ app.post('/send', async (req, res) => {
   }
 });
 
-// 메시지 불러오기 (GET)
+// 메시지 조회 (GET)
 app.get('/send', async (req, res) => {
   try {
     const messages = await Message.find().sort({ _id: -1 }).limit(50);
     res.json(messages.reverse());
   } catch (err) {
-    console.error('❌ 메시지 로드 실패:', err);
+    console.error('❌ 메시지 불러오기 실패:', err);
     res.status(500).json([]);
   }
 });

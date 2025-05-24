@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050;
 
 // 🔥 필수 JSON 파싱 미들웨어
 app.use(express.json());
@@ -64,4 +64,5 @@ app.get('/send', async (req, res) => {
     res.status(500).json([]);
   }
 });
+
 

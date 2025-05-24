@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>OrcaX 로그인</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f0f0;
+      text-align: center;
+      padding: 3rem;
+    }
+    input, button {
+      padding: 0.8rem;
+      font-size: 1rem;
+      margin: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔐 OrcaX 로그인</h1>
+  <input type="text" id="id" placeholder="아이디"/><br/>
+  <input type="password" id="pw" placeholder="비밀번호"/><br/>
+  <button onclick="login()">로그인</button>
+
+  <script>
+    async function login() {
+      const id = document.getElementById("id").value;
+      const pw = document.getElementById("pw").value;
+
+      try {
+        const res = await fetch("https://YOUR-BACKEND.com/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, password: pw })
+        });
+        const data = await res.json();
+
+        if (data.token) {
+          localStorage.setItem("orcax_token", data.token);
+          localStorage.setItem("orcax_user", data.user.name);
+          window.location.href = "index-10.html";
+        } else {
+          alert("로그인 실패");
+        }
+      } catch (err) {
+        alert("서버 오류");
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>

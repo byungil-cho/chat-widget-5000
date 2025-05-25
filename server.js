@@ -1,64 +1,97 @@
+// 전체 통합된 server.js
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
 const app = express();
-const PORT = process.env.PORT || 5050;
-
 app.use(cors());
 app.use(express.json());
 
-// MongoDB 연결
-mongoose.connect("mongodb://127.0.0.1:27017/orcax-chat", {
+// 몽고 연결
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-}).then(() => {
-  console.log("🥔 감자 창고(MongoDB) 연결 성공!");
-}).catch((err) => {
-  console.error("❌ MongoDB 연결 실패:", err);
 });
+
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "❌ MongoDB 연결 실패:"));
+db.once("open", () => console.log("✅ MongoDB 연결 완료"));
 
 // 메시지 스키마
 const messageSchema = new mongoose.Schema({
   sender: String,
   message: String,
-  timestamp: String
+  timestamp: String,
 });
 
 const Message = mongoose.model("Message", messageSchema);
 
-// 메시지 저장 (POST)
+// 제품(곡물) 스키마
+const productSchema = new mongoose.Schema({
+  name: String,
+  quantity: Number,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Product = mongoose.model("Product", productSchema);
+
+// 메시지 API
+app.get("/send", async (req, res) => {
+  const messages = await Message.find();
+  res.json(messages);
+});
+
 app.post("/send", async (req, res) => {
   const { sender, message, timestamp } = req.body;
+  const msg = new Message({ sender, message, timestamp });
+  await msg.save();
+  res.json({ success: true });
+});
 
+// 제품 등록 API (선택적으로 사용할 수 있음)
+app.post("/api/product", async (req, res) => {
+  const { name, quantity } = req.body;
   try {
-    const newMessage = new Message({ sender, message, timestamp });
-    await newMessage.save();
-    console.log("✅ 감자 저장 완료:", sender, message);
-    res.sendStatus(200);
-  } catch (error) {
-    console.error("❌ 감자 저장 중 오류:", error);
-    res.status(500).send("서버 오류");
+    const result = await Product.updateOne(
+      { name },
+      {
+        $inc: { quantity },
+        $setOnInsert: { createdAt: new Date() }
+      },
+      { upsert: true }
+    );
+    res.json({ success: true, result });
+  } catch (err) {
+    console.error("❌ 제품 저장 실패:", err);
+    res.status(500).send("제품 저장 오류");
   }
 });
 
-// 메시지 조회 (GET)
-app.get("/send", async (req, res) => {
+// 시세 계산기 API
+app.get("/api/market", async (req, res) => {
   try {
-    const messages = await Message.find().sort({ timestamp: 1 });
-    res.json(messages);
-  } catch (error) {
-    console.error("❌ 메시지 조회 실패:", error);
-    res.status(500).send("서버 오류");
+    const items = await Product.aggregate([
+      { $group: { _id: "$name", total: { $sum: "$quantity" } } }
+    ]);
+
+    const totalQty = items.reduce((sum, item) => sum + item.total, 0);
+    const avg = totalQty / (items.length || 1);
+
+    const priced = items.map((item) => ({
+      name: item._id,
+      quantity: item.total,
+      price: parseFloat((avg / item.total).toFixed(2)),
+    }));
+
+    res.json(priced);
+  } catch (err) {
+    console.error("❌ 시세 계산 실패:", err);
+    res.status(500).send("시세 계산 중 오류");
   }
 });
 
-// 기본 라우트
-app.get("/", (req, res) => {
-  res.send("💬 orcax-chat-widget 서버 실행 중입니다!");
-});
-
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`🚀 서버 출발! 포트: ${PORT}`);
+  console.log(`✅ OrcaX 서버 실행 중: http://localhost:${PORT}`);
 });
-

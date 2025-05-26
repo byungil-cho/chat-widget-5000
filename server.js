@@ -1,52 +1,18 @@
-require("dotenv").config();
-const WebSocket = require("ws");
-const mongoose = require("mongoose");
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+require('dotenv').config();
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-const db = mongoose.connection;
-db.once("open", () => console.log("✅ MongoDB 연결 완료"));
-db.on("error", console.error);
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-const productSchema = new mongoose.Schema({
-  name: String,
-  quantity: Number,
-  createdAt: { type: Date, default: Date.now }
-});
-const Product = mongoose.model("Product", productSchema);
+const farmRoutes = require('./routes/farm');
+app.use('/api/farm', farmRoutes);
 
-const socket = new WebSocket(process.env.COK_URL);
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("MongoDB 연결 성공"))
+  .catch(err => console.error("MongoDB 연결 실패", err));
 
-socket.on("open", () => {
-  console.log("📡 콕 서버 연결 성공");
-});
-
-socket.on("message", async (data) => {
-  try {
-    const msg = JSON.parse(data);
-    const { name, qty } = msg;
-
-    console.log(`[📨 수신] ${name} - ${qty}개`);
-
-    await Product.updateOne(
-      { name },
-      {
-        $inc: { quantity: qty },
-        $setOnInsert: { createdAt: new Date() }
-      },
-      { upsert: true }
-    );
-
-    console.log(`[💾 저장 완료] ${name} 수량 반영됨`);
-  } catch (err) {
-    console.error("❌ 메시지 처리 에러:", err);
-  }
-});
-
-socket.on("error", (err) => {
-  console.error("🔥 WebSocket 연결 실패:", err);
-});
-
-});
+const PORT = process.env.PORT || 5050;
+app.listen(PORT, () => console.log(`서버 실행 중: http://localhost:${PORT}`));

@@ -1,18 +1,23 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
 
+const express = require("express");
 const app = express();
-app.use(cors());
+const PORT = process.env.PORT || 5050;
+
 app.use(express.json());
 
-const farmRoutes = require('./routes/farm');
-app.use('/api/farm', farmRoutes);
+// ✅ 감시용 ping 라우터
+app.get("/api/ping", (req, res) => {
+  res.status(200).send("pong");
+});
 
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("MongoDB 연결 성공"))
-  .catch(err => console.error("MongoDB 연결 실패", err));
+// ✅ 메시지 수신 라우터 예시
+app.post("/api/messages", (req, res) => {
+  const { name, message } = req.body;
+  console.log(`📨 메시지 도착: ${name} - ${message}`);
+  res.status(200).json({ success: true, msg: "메시지 전송 완료" });
+});
 
-const PORT = process.env.PORT || 5050;
-app.listen(PORT, () => console.log(`서버 실행 중: http://localhost:${PORT}`));
+// ✅ 서버 실행
+app.listen(PORT, () => {
+  console.log(`🚀 콕 서버 작동 중: http://localhost:${PORT}`);
+});
